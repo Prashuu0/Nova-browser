@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nova-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nova
+      POSTGRES_PASSWORD: nova_secret
+      POSTGRES_DB: nova_cloud
+    ports:
+      - '5432:5432'
+    volumes:
+      - nova_pg_data:/var/lib/postgresql/data
+      - ./src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+
+  redis:
+    image: redis:7-alpine
+    container_name: nova-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+
+  nova-cloud:
+    build: .
+    container_name: nova-cloud-api
+    restart: unless-stopped
+    ports:
+      - '3847:3847'
+    environment:
+      DATABASE_URL: postgresql://nova:nova_secret@postgres:5432/nova_cloud
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-nova-dev-access-secret-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-nova-dev-refresh-secret-change-in-production}
+      PORT: 3847
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./src:/app/src
+
+volumes:
+  nova_pg_data:

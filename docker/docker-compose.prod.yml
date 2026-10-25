@@ -1,0 +1,59 @@
+version: '3.9'
+
+# Production stack — Member 6 (DevOps)
+# Usage: docker compose -f docker/docker-compose.prod.yml up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nova}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-nova_cloud}
+    volumes:
+      - nova_pg_prod:/var/lib/postgresql/data
+    networks:
+      - nova-net
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - nova_redis_prod:/data
+    networks:
+      - nova-net
+
+  nova-cloud:
+    build:
+      context: ../nova-cloud
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${PORT:-3847}:3847"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nova}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nova_cloud}
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM:-Nova Browser <noreply@novabrowser.app>}
+      APP_URL: ${APP_URL:-https://novabrowser.app}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://novabrowser.app}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - nova-net
+
+volumes:
+  nova_pg_prod:
+  nova_redis_prod:
+
+networks:
+  nova-net:
+    driver: bridge

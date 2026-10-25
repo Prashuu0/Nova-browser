@@ -1,0 +1,67 @@
+name: Nova CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: node scripts/build-main.cjs
+      - run: npm run build:netlify
+
+  build-cloud:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: nova
+          POSTGRES_PASSWORD: nova_secret
+          POSTGRES_DB: nova_cloud
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - working-directory: nova-cloud
+        run: |
+          npm install
+          DATABASE_URL=postgresql://nova:nova_secret@localhost:5432/nova_cloud npm run migrate
+        env:
+          JWT_ACCESS_SECRET: ci-test-access-secret-minimum-32-chars
+          JWT_REFRESH_SECRET: ci-test-refresh-secret-minimum-32-chars
+      - working-directory: nova-cloud
+        run: node -e "require('./src/index.js')" &
+        env:
+          DATABASE_URL: postgresql://nova:nova_secret@localhost:5432/nova_cloud
+          JWT_ACCESS_SECRET: ci-test-access-secret-minimum-32-chars
+          JWT_REFRESH_SECRET: ci-test-refresh-secret-minimum-32-chars
+          PORT: 3847
+      - run: sleep 3 && curl -f http://localhost:3847/health || exit 1
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: node scripts/build-main.cjs

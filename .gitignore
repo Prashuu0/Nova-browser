@@ -1,0 +1,19 @@
+node_modules/
+dist/
+dist-electron/
+release/
+*.log
+.env
+.env.local
+.DS_Store
+Thumbs.db
+coverage/
+playwright-report/
+test-results/
+/src/renderer/public/downloads/*.exe
+
+
+# Local database files
+nova-cloud/data/*.db
+nova-cloud/data/*.db-shm
+nova-cloud/data/*.db-wal

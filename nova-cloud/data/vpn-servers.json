@@ -1,0 +1,29 @@
+[
+  {
+    "id": "nova-us-east",
+    "name": "Nova US East",
+    "country": "US",
+    "city": "New York",
+    "load": 24,
+    "premium": false,
+    "config": "[Interface]\nPrivateKey = REPLACE_WITH_YOUR_PRIVATE_KEY\nAddress = 10.66.66.2/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = REPLACE_WITH_SERVER_PUBLIC_KEY\nEndpoint = vpn-us.novabrowser.app:51820\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25\n"
+  },
+  {
+    "id": "nova-eu-west",
+    "name": "Nova EU West",
+    "country": "DE",
+    "city": "Frankfurt",
+    "load": 31,
+    "premium": false,
+    "config": "[Interface]\nPrivateKey = REPLACE_WITH_YOUR_PRIVATE_KEY\nAddress = 10.66.66.3/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = REPLACE_WITH_SERVER_PUBLIC_KEY\nEndpoint = vpn-eu.novabrowser.app:51820\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25\n"
+  },
+  {
+    "id": "nova-ap-south",
+    "name": "Nova India",
+    "country": "IN",
+    "city": "Mumbai",
+    "load": 18,
+    "premium": true,
+    "config": "[Interface]\nPrivateKey = REPLACE_WITH_YOUR_PRIVATE_KEY\nAddress = 10.66.66.4/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = REPLACE_WITH_SERVER_PUBLIC_KEY\nEndpoint = vpn-in.novabrowser.app:51820\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25\n"
+  }
+]
